@@ -24,7 +24,7 @@ public class SemaphoreTest {
         //线程数
         int n = 100;
         //信号量
-        int permits = 1;
+        int permits = 3;
         JedisPoolConfig config = new JedisPoolConfig();
         //最大连接数
         config.setMaxTotal(2000);
@@ -34,7 +34,7 @@ public class SemaphoreTest {
         System.out.println("redis连接成功");
         SemaphoreTest.countDownLatch = new CountDownLatch(n);
         //定时释放
-//        scheduled.scheduleAtFixedRate(new ReleaseTask(jedisPool, permits), 1, 1, TimeUnit.SECONDS);
+//        scheduled.scheduleAtFixedRate(new ReleaseTask(jedisPool, permits), 3, 3, TimeUnit.SECONDS);
         long begin = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
             Thread t = new Thread(new DoTask(jedisPool, permits, "thread-" + i));
@@ -66,10 +66,10 @@ class DoTask implements Runnable {
         DistributeSemaphore semaphore = new DistributeSemaphore(jedisPool, "cps", permits, 10);
         semaphore.acquire();
         int n = SemaphoreTest.atomicInteger.incrementAndGet();
-        System.out.println("线程【" + name + "】获得信号量 可用信号量【" + semaphore.getSemaphore() + "】等待线程数【" + semaphore.getWaitCount() + "】累加结果【" + n + "】");
+        System.out.println("-- 线程【" + name + "】获得信号量 可用信号量【" + semaphore.getSemaphore() + "】累加结果【" + n + "】");
         //增加释放操作 ----
         semaphore.release();
-        System.out.println("线程【" + name + "】释放信号量 可用信号量【" + semaphore.getSemaphore() + "】等待线程数【" + semaphore.getWaitCount() + "】累加结果【" + n + "】");
+        System.out.println("++ 线程【" + name + "】释放信号量 可用信号量【" + semaphore.getSemaphore() + "】累加结果【" + n + "】");
         // --------------
         SemaphoreTest.countDownLatch.countDown();
     }
@@ -90,9 +90,9 @@ class ReleaseTask implements Runnable {
     @Override
     public void run() {
         DistributeSemaphore semaphore = new DistributeSemaphore(jedisPool, "cps", permits, 10);
-        System.out.println("释放前 可用信号量【" + semaphore.getSemaphore() + "】等待线程数【" + semaphore.getWaitCount() + "】");
+        System.out.println("释放前 可用信号量【" + semaphore.getSemaphore() + "】");
         semaphore.releaseAll();
         SemaphoreTest.atomicInteger.set(0);
-        System.out.println("释放后 可用信号量【" + semaphore.getSemaphore() + "】等待线程数【" + semaphore.getWaitCount() + "】");
+        System.out.println("释放后 可用信号量【" + semaphore.getSemaphore() + "】");
     }
 }

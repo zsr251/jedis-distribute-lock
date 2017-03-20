@@ -39,10 +39,10 @@ public class DistributeLock {
      * redis释放锁通知列表
      */
     private String redisListKey;
-    /**
-     * redis等待线程数
-     */
-    private String redisWaitKey;
+//    /**
+//     * redis等待线程数
+//     */
+//    private String redisWaitKey;
 
     /**
      * 实例化简单分布式锁
@@ -63,37 +63,37 @@ public class DistributeLock {
         this.jedisPool = jedisPool;
         this.redisLockKey = REDIS_KEY + "value:" + redisLockKey;
         this.redisListKey = REDIS_KEY + "list:" + redisLockKey;
-        this.redisWaitKey = REDIS_KEY + "wait:" + redisLockKey;
+//        this.redisWaitKey = REDIS_KEY + "wait:" + redisLockKey;
     }
 
-    /**
-     * 获得等待线程数 非原子操作 结果供参考
-     */
-    public int getWaitCount() {
-        Jedis jedis = jedisPool.getResource();
-        try {
-            int n = getInt(jedis.get(redisWaitKey));
-            //如果依然后信号量 则删除
-            if (n < 0) {
-                jedis.del(redisWaitKey);
-                return 0;
-            }
-            //三重判断 清除 还有信号量但是有等待线程的个数
-            if (!jedis.exists(redisLockKey) && !jedis.exists(redisLockKey)) {
-                try {
-                    Thread.sleep(10);
-                } catch (Exception e) {
-                }
-                if (!jedis.exists(redisLockKey)) {
-                    jedis.del(redisWaitKey);
-                    return 0;
-                }
-            }
-            return n;
-        } finally {
-            jedis.close();
-        }
-    }
+//    /**
+//     * 获得等待线程数 非原子操作 结果供参考
+//     */
+//    public int getWaitCount() {
+//        Jedis jedis = jedisPool.getResource();
+//        try {
+//            int n = getInt(jedis.get(redisWaitKey));
+//            //如果依然后信号量 则删除
+//            if (n < 0) {
+//                jedis.del(redisWaitKey);
+//                return 0;
+//            }
+//            //三重判断 清除 还有信号量但是有等待线程的个数
+//            if (!jedis.exists(redisLockKey) && !jedis.exists(redisLockKey)) {
+//                try {
+//                    Thread.sleep(10);
+//                } catch (Exception e) {
+//                }
+//                if (!jedis.exists(redisLockKey)) {
+//                    jedis.del(redisWaitKey);
+//                    return 0;
+//                }
+//            }
+//            return n;
+//        } finally {
+//            jedis.close();
+//        }
+//    }
 
     /**
      * 获得锁
@@ -150,12 +150,12 @@ public class DistributeLock {
             jedis.expire(redisLockKey, expireSecond);
             return true;
         }
-        //增加等待线程数
-        jedis.incr(redisWaitKey);
+//        //增加等待线程数
+//        jedis.incr(redisWaitKey);
         //阻塞等待释放锁通知
         List<String> lp = jedis.blpop(waitSecond, redisListKey);
-        //减少等待线程数
-        jedis.decr(redisWaitKey);
+//        //减少等待线程数
+//        jedis.decr(redisWaitKey);
         if (lp.size() == 0) {
             //如果超时则返回锁定失败
             return false;

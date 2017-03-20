@@ -81,14 +81,13 @@ class AddSafeThread implements Runnable {
             e.printStackTrace();
         }
         LockTest.count++;
-        System.out.println("安全线程【" + name + "】 执行后结果【" + LockTest.count + "】等待线程数【"+lock.getWaitCount()+"】");
+        System.out.println("安全线程【" + name + "】 执行后结果【" + LockTest.count + "】");
         try {
             Thread.sleep(LockTest.sleep);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
         lock.tryUnlock();
-        System.out.println("等待线程数【"+lock.getWaitCount()+"】");
         LockTest.countDownLatch.countDown();
     }
 }
