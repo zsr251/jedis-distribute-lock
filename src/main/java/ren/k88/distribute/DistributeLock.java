@@ -156,7 +156,7 @@ public class DistributeLock {
         List<String> lp = jedis.blpop(waitSecond, redisListKey);
 //        //减少等待线程数
 //        jedis.decr(redisWaitKey);
-        if (lp.size() == 0) {
+        if (lp==null || lp.size() < 1) {
             //如果超时则返回锁定失败
             return false;
         }
