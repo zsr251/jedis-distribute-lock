@@ -1,3 +1,4 @@
+ **++当前代码是非重入锁，只适用于非常简单的业务场景，稍微复杂的建议使用 [redisson](https://github.com/redisson/redisson)++**
 # jedis-distribute-lock
 使用redis实现分布式锁 分布式信号量 可解决等待线程自旋造成CPU资源浪费的问题
 
