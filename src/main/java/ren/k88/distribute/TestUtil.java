@@ -120,10 +120,55 @@ public class TestUtil {
             jedis.close();
         }
     }
+    public static void testLua(JedisPool jedisPool ){
+//        String script = "local f = redis.call('HGET',KEYS[1],'flag');if f ~= nil and f ~= KEYS[2] then return 0;end redis.call('HSET',KEYS[1],'flag',KEYS[2]);return 1;";
+        StringBuffer lock = new StringBuffer();
+        final Jedis jedis = jedisPool.getResource();
+        lock.append("local f = redis.call('HGET',KEYS[1],'flag');")
+                .append("if type(f) == 'string' and f ~= KEYS[2] then ")
+                .append("return 0;")
+                .append("end ")
+                .append("redis.call('HSET',KEYS[1],'flag',KEYS[2]);")
+                .append("redis.call('EXPIRE',KEYS[1],KEYS[3]);")
+                .append("local c = redis.call('HGET',KEYS[1],'count');")
+                .append("if type(c) ~= 'string' or tonumber(c) < 0 then ")
+                .append("redis.call('HSET',KEYS[1],'count',1);")
+                .append("else ")
+                .append("redis.call('HSET',KEYS[1],'count',c+1);")
+                .append("end ")
+                .append("return 1");
+
+        StringBuffer unlock = new StringBuffer();
+        unlock.append("local f = redis.call('HGET',KEYS[1],'flag');")
+                .append("if type(f) ~= 'string' or (type(f) == 'string' and f ~= KEYS[2]) then ")
+                .append("return 0;")
+                .append("end ")
+                .append("local c = redis.call('HGET',KEYS[1],'count');")
+                .append("if type(c) ~= 'string' or tonumber(c) < 2 then ")
+                .append("redis.call('DEL',KEYS[1]);")
+                .append("return 1;")
+                .append("else ")
+                .append("redis.call('HSET',KEYS[1],'count',c-1);")
+                .append("return 2;")
+                .append("end");
+
+
+        try {
+            System.out.println(lock.toString());
+            System.out.println(unlock.toString());
+            Object a = jedis.eval(lock.toString(),3,"lock","1234","60");
+            System.out.println(a);
+            Object b = jedis.eval(unlock.toString(),3,"lock","1234","60");
+            System.out.println(b);
+        }finally {
+            jedis.close();
+        }
+    }
+
     public static void main(String[] args) {
         JedisPoolConfig config = new JedisPoolConfig();
         config.setMaxIdle(5);
-        JedisPool jedisPool = new JedisPool(config,"127.0.0.1",6379);
+        JedisPool jedisPool = new JedisPool(config, "127.0.0.1", 6379);
         //普通命令
         testSimple(jedisPool);
         //排行榜
@@ -134,6 +179,7 @@ public class TestUtil {
         testPipeline(jedisPool);
         //订阅
         testSub(jedisPool);
-
+        //脚本
+        testLua(jedisPool);
     }
 }

@@ -21,7 +21,7 @@ public class LockTest {
 
     public static void main(String[] args) throws Exception {
         //线程数
-        int n = 100;
+        int n = 5;
         long begin;
 
         count = 0;
@@ -65,11 +65,16 @@ class AddSafeThread implements Runnable {
         this.name = name;
         this.jedisPool = jedisPool;
     }
-
+    @Override
     public void run() {
         DistributeLock lock = new DistributeLock(jedisPool, "add");
+        String flag = lock.getThreadFlag();
+
         try {
-            lock.lock(10, 600);
+            System.out.println("尝试获得锁，线程标识【"+flag+"】");
+            lock.lock(10, 600,flag);
+            System.out.println("尝试再次获得锁，线程标识【"+flag+"】");
+            lock.lock(10, 600,flag);
         } catch (DistributeLockException e) {
             System.out.println(e.getMessage());
             LockTest.countDownLatch.countDown();
@@ -81,13 +86,23 @@ class AddSafeThread implements Runnable {
             e.printStackTrace();
         }
         LockTest.count++;
-        System.out.println("安全线程【" + name + "】 执行后结果【" + LockTest.count + "】");
+        System.out.println("安全线程【" + name + "】 执行后结果【" + LockTest.count + "】线程标识【"+flag+"】");
         try {
             Thread.sleep(LockTest.sleep);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        lock.tryUnlock();
+        flag = lock.getThreadFlag();
+        if(lock.tryUnlock(flag)) {
+            System.out.println("锁释放成功，线程标识【" + flag + "】");
+        }else {
+            System.out.println("锁释放失败，线程标识【" + flag + "】");
+        }
+        if(lock.tryUnlock(flag)) {
+            System.out.println("锁释放成功，线程标识【" + flag + "】");
+        }else {
+            System.out.println("锁释放失败，线程标识【" + flag + "】");
+        }
         LockTest.countDownLatch.countDown();
     }
 }
@@ -101,7 +116,7 @@ class AddUnsafeThread implements Runnable {
     public AddUnsafeThread(String name) {
         this.name = name;
     }
-
+    @Override
     public void run() {
         try {
             Thread.sleep(LockTest.sleep);

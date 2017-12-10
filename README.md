@@ -1,4 +1,4 @@
- **++当前代码是非重入锁，只适用于非常简单的业务场景，稍微复杂的建议使用 [redisson](https://github.com/redisson/redisson)++**
+ **++当前代码只适用于非常简单的业务场景，稍微复杂的建议使用 [redisson](https://github.com/redisson/redisson)++**
 # jedis-distribute-lock
 使用redis实现分布式锁 分布式信号量 可解决等待线程自旋造成CPU资源浪费的问题
 
@@ -8,7 +8,7 @@
 
 ### 原理
 
-使用redis的SETNX实现，使用BLPOP实现释放锁时的通知，可防止等待线程自旋浪费cpu资源
+原理：使用redis的lua脚本实现 lua脚本可保证原子性，使用BLPOP实现释放锁时的通知，可防止等待线程自旋浪费cpu资源
 
 ### 问题
 
