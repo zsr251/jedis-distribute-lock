@@ -31,5 +31,5 @@
 ### 解决方案
 1. 提供释放所有信号量方法
 ### 欢迎关注我的公众号和[JavaSoSo博客](http://www.javasoso.com)
-![JavaSoSo公众号](https://i.loli.net/2017/11/24/5a177ebc75827.jpg) 
+![JavaSoSo公众号](http://omhmq0oao.bkt.clouddn.com/5326136b16b04d7398dbbd513e7378d3.jpg)
 
